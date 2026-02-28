@@ -25,6 +25,7 @@ seed_data()
 
 # ── Dash app ────────────────────────────────────────────────────────────────────
 from server import app
+server = app.server   # expose Flask WSGI app for gunicorn (app:server)
 
 # ── Layouts ─────────────────────────────────────────────────────────────────────
 from layouts import dashboard, sales, inventory, vendors, procurement
