@@ -4,13 +4,10 @@ from __future__ import annotations
 import dash_bootstrap_components as dbc
 from dash import html, dcc
 
-# Users shown as quick-select tiles to pre-fill the username field.
-# Tuple: (username, bootstrap-icon-class, role-label, accent-colour)
+# Role tiles: (username_to_prefill, icon, display_label, accent_colour)
 _USER_TILES: list[tuple[str, str, str, str]] = [
-    ("Dorababu", "bi-briefcase-fill",    "Owner", "#3B82F6"),
-    ("ramana",   "bi-person-badge-fill", "Staff", "#10B981"),
+    ("Dorababu", "bi-briefcase-fill",    "Admin", "#3B82F6"),
     ("seller",   "bi-person-badge-fill", "Staff", "#10B981"),
-    ("ravi",     "bi-person-badge-fill", "Staff", "#10B981"),
 ]
 
 
@@ -19,15 +16,15 @@ def _user_tile(username: str, icon: str, role_label: str, color: str) -> html.Di
     return html.Div(
         [
             html.I(className=f"bi {icon} persona-icon", style={"color": color}),
-            html.Div(username, className="persona-label"),
-            html.Div(role_label, className="persona-desc"),
+            html.Div(role_label, className="persona-label"),
+            html.Div("Click to select", className="persona-desc"),
         ],
         id={"type": "user-tile", "username": username},
         className="persona-card",
         n_clicks=0,
         role="button",
         tabIndex=0,
-        **{"aria-label": f"Sign in as {username}"},
+        **{"aria-label": f"Sign in as {role_label}"},
     )
 
 
@@ -55,7 +52,7 @@ def get_layout() -> html.Div:
                     html.Hr(style={"borderColor": "var(--border-light)", "margin": "0 0 24px"}),
 
                     # ── User quick-select ─────────────────────────────────────
-                    html.Div("Select your account", className="login-section-label"),
+                    html.Div("Select your role", className="login-section-label"),
                     html.Div(
                         [_user_tile(*t) for t in _USER_TILES],
                         className="persona-row user-tiles-row",

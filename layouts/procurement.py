@@ -22,11 +22,13 @@ def get_layout():
                             [{"label": s, "value": s} for s in PO_STATUSES],
                     value="All",
                     clearable=False,
-                    style={"width": "200px", "fontSize": "13px"},
+                    style={"width": "200px", "fontSize": "13px",
+                           "color": "#0F172A"},
                 ),
-            ]),
+            ], style={"position": "relative", "zIndex": 1000}),
         ], style={"display": "flex", "justifyContent": "space-between",
-                  "alignItems": "center", "marginBottom": "20px"}),
+                  "alignItems": "center", "marginBottom": "20px",
+                  "position": "relative", "zIndex": 100}),
 
         # PO Table
         html.Div([

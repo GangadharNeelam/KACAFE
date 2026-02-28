@@ -285,6 +285,12 @@ def register_callbacks():
     def toggle_adjust_modal(quick_clicks, close_c, apply_c, is_open):
         if flask.session.get("role") != ROLE_OWNER:
             raise PreventUpdate
+        from dash import callback_context as _cctx
+        if not _cctx.triggered:
+            raise PreventUpdate
+        # Guard: ignore spurious fires when n_clicks resets to 0 on interval re-render
+        if _cctx.triggered[0].get("value", 0) == 0:
+            raise PreventUpdate
         triggered = ctx.triggered_id
         if triggered in ("close-adjust-modal", "apply-adjustment"):
             return False, no_update, no_update

@@ -13,7 +13,7 @@ ALL_ROLES: tuple[str, ...] = (ROLE_OWNER, ROLE_STAFF)
 
 # ── Human-readable metadata per role ─────────────────────────────────────────
 ROLE_DISPLAY: dict[str, str] = {
-    ROLE_OWNER: "Owner",
+    ROLE_OWNER: "Admin",
     ROLE_STAFF: "Staff",
 }
 
