@@ -189,6 +189,9 @@ def register_callbacks():
         triggered = ctx.triggered[0]["prop_id"]
         if "close-delivery-modal" in triggered or "save-delivery" in triggered:
             return False, no_update, no_update
+        # Guard: ignore spurious fires when n_clicks resets to 0 on re-render
+        if ctx.triggered[0].get("value", 0) == 0:
+            raise PreventUpdate
         try:
             btn_data = json.loads(triggered.split(".")[0])
             po_id = btn_data["index"]
@@ -204,13 +207,16 @@ def register_callbacks():
         if not po:
             raise PreventUpdate
 
-        qty_remaining = float(po["remaining_qty"] or po.get("qty_ordered", 0) or 0)
+        # sqlite3.Row has no .get() — use direct key access
+        qty_ordered   = float(po["qty_ordered"] or 0)
+        qty_delivered = float(po["qty_delivered"] or 0)
+        qty_remaining = float(po["remaining_qty"] or 0)
         info = html.Div([
             html.Div(f"PO: {po['po_number']}  —  {po['material_name']}",
                      style={"fontWeight": "600", "marginBottom": "4px"}),
             html.Div(
-                f"Ordered: {po.get('qty_ordered', 0) or 0:.0f}  ·  "
-                f"Received so far: {po.get('qty_delivered', 0) or 0:.0f}  ·  "
+                f"Ordered: {qty_ordered:.0f}  ·  "
+                f"Received so far: {qty_delivered:.0f}  ·  "
                 f"Still expected: {qty_remaining:.0f}",
                 style={"color": "var(--text-muted)", "fontSize": "12px"}
             ),
@@ -283,7 +289,10 @@ def register_callbacks():
         prevent_initial_call=True,
     )
     def toggle_po_modal(open_c, close_c, save_c, is_open):
-        return not is_open
+        triggered = callback_context.triggered[0]["prop_id"]
+        if "open-po-modal" in triggered:
+            return True
+        return False
 
     @app.callback(
         Output("po-vendor", "options"),
@@ -434,7 +443,10 @@ def register_callbacks():
         prevent_initial_call=True,
     )
     def toggle_vendor_modal(open_c, close_c, save_c, is_open):
-        return not is_open
+        triggered = callback_context.triggered[0]["prop_id"]
+        if "open-vendor-modal" in triggered:
+            return True
+        return False
 
     @app.callback(
         [Output("vendor-toast", "children"),
@@ -457,4 +469,34 @@ def register_callbacks():
             "Vendor Added" if result["success"] else "Error",
             True,
             "success" if result["success"] else "danger",
+        )
+
+    @app.callback(
+        [Output("vendor-toast", "children",  allow_duplicate=True),
+         Output("vendor-toast", "header",    allow_duplicate=True),
+         Output("vendor-toast", "is_open",   allow_duplicate=True),
+         Output("vendor-toast", "icon",      allow_duplicate=True),
+         Output("vendors-refresh", "n_intervals")],
+        Input({"type": "delete-vendor-btn", "index": ALL}, "n_clicks"),
+        [State({"type": "delete-vendor-btn", "index": ALL}, "id"),
+         State("vendors-refresh", "n_intervals")],
+        prevent_initial_call=True,
+    )
+    def handle_delete_vendor(n_clicks_list, btn_ids, n_intervals):
+        ctx = callback_context
+        if not ctx.triggered or not any(n for n in (n_clicks_list or []) if n):
+            raise PreventUpdate
+        triggered = ctx.triggered[0]["prop_id"]
+        try:
+            btn_data = json.loads(triggered.split(".")[0])
+            vendor_id = btn_data["index"]
+        except Exception:
+            raise PreventUpdate
+        result = delete_vendor(int(vendor_id))
+        return (
+            result["message"],
+            "Vendor Deleted" if result["success"] else "Error",
+            True,
+            "success" if result["success"] else "danger",
+            (n_intervals or 0) + 1,
         )

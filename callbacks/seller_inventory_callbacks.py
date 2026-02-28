@@ -156,11 +156,14 @@ def _build_categorized_inventory(df) -> html.Div:
                     "fontFamily": "Space Mono", "fontSize": "12px",
                     "color": "var(--text-muted)",
                 }),
-                html.Div(f"{row['days_remaining']:.0f}d", style={
-                    "flex": "1", "textAlign": "right",
-                    "fontFamily": "Space Mono", "fontSize": "12px",
-                    "color": sc if row["status"] != "OK" else "var(--text-muted)",
-                }),
+                html.Div(
+                    f"{row['days_remaining']:.0f}d" if row["days_remaining"] < 999 else "∞",
+                    style={
+                        "flex": "1", "textAlign": "right",
+                        "fontFamily": "Space Mono", "fontSize": "12px",
+                        "color": sc if row["status"] != "OK" else "var(--text-muted)",
+                    },
+                ),
                 html.Div(
                     html.Span(row["status"], style={
                         "background": sbg, "color": sc,
