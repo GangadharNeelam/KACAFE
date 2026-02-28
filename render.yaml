@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: kacafe
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:server --workers 1 --threads 2 --timeout 120
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "false"
+      - key: SESSION_LIFETIME_HOURS
+        value: "8"
